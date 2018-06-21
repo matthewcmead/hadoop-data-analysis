@@ -1,0 +1,69 @@
+version: "3"
+#volumes:
+#  dn_01_data:
+#  nn_01_data:
+services:
+  namenode:
+    image: "matthewcmead/cloudera-cdh-namenode:cdh-5.14.2"
+#    volumes:
+#    - pgdata:/var/lib/postgresql
+    ports:
+     - "8020:8020"
+    networks:
+      - hadoop
+    restart: unless-stopped
+
+  yarnmaster:
+    image: "matthewcmead/cloudera-cdh-yarnmaster:cdh-5.14.2"
+#    volumes:
+#    - pgdata:/var/lib/postgresql
+    ports:
+     - "8032:8032"
+     - "8088:8088"
+    networks:
+      - hadoop
+    restart: unless-stopped
+
+  datanode01:
+    image: "matthewcmead/cloudera-cdh-datanode:cdh-5.14.2"
+#    volumes:
+#    - pgdata:/var/lib/postgresql
+    ports:
+     - "50020:50020"
+     - "50075:50075"
+     - "8042:8042"
+    networks:
+      - hadoop
+    depends_on:
+      - namenode
+      - yarnmaster
+    restart: unless-stopped
+
+#  edgenode:
+#    image: "matthewcmead/cloudera-cdh-edgenode:cdh-5.14.2"
+#    volumes:
+#    - pgdata:/var/lib/postgresql
+#    ports:
+#     - "50020:50020"
+#     - "50075:50075"
+#     - "8042:8042"
+#    networks:
+#      - hadoop
+#    depends_on:
+#      - namenode
+#      - yarnmaster
+#    restart: unless-stopped
+
+networks:
+  hadoop:
+    internal: true
+#    ipam:
+#      driver: default
+#      config:
+#        - subnet: 172.19.253.0/24
+  edge:
+    driver: bridge
+#    ipam:
+#      driver: default
+#      config:
+#        - subnet: 172.19.254.0/24
