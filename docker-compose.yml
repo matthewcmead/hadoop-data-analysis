@@ -1,12 +1,12 @@
 version: "3"
-#volumes:
-#  dn_01_data:
-#  nn_01_data:
+volumes:
+  dn_01_data:
+  nn_01_data:
 services:
   namenode:
     image: "matthewcmead/cloudera-cdh-namenode:cdh-5.14.2"
-#    volumes:
-#    - pgdata:/var/lib/postgresql
+    volumes:
+    - nn_01_data:/hdfs
     ports:
      - "8020:8020"
     networks:
@@ -15,8 +15,6 @@ services:
 
   yarnmaster:
     image: "matthewcmead/cloudera-cdh-yarnmaster:cdh-5.14.2"
-#    volumes:
-#    - pgdata:/var/lib/postgresql
     ports:
      - "8032:8032"
      - "8088:8088"
@@ -26,8 +24,8 @@ services:
 
   datanode01:
     image: "matthewcmead/cloudera-cdh-datanode:cdh-5.14.2"
-#    volumes:
-#    - pgdata:/var/lib/postgresql
+    volumes:
+    - dn_01_data:/hdfs
     ports:
      - "50020:50020"
      - "50075:50075"
