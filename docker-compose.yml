@@ -37,20 +37,20 @@ services:
       - yarnmaster
     restart: unless-stopped
 
-#  edgenode:
-#    image: "matthewcmead/cloudera-cdh-edgenode:cdh-5.14.2"
+  edgenode:
+    image: "matthewcmead/cloudera-cdh-edgenode:cdh-5.14.2"
 #    volumes:
 #    - pgdata:/var/lib/postgresql
 #    ports:
 #     - "50020:50020"
 #     - "50075:50075"
 #     - "8042:8042"
-#    networks:
-#      - hadoop
-#    depends_on:
-#      - namenode
-#      - yarnmaster
-#    restart: unless-stopped
+    networks:
+      - hadoop
+    depends_on:
+      - namenode
+      - yarnmaster
+    command: /bin/true
 
 networks:
   hadoop:
