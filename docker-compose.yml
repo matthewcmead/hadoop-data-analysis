@@ -1,7 +1,10 @@
 version: "3"
+
 volumes:
   dn_01_data:
   nn_01_data:
+  mysql_data:
+
 services:
   namenode:
     image: "matthewcmead/cloudera-cdh-namenode:cdh-5.14.2"
@@ -51,6 +54,33 @@ services:
       - namenode
       - yarnmaster
     command: /bin/true
+
+  mysql:
+    image: "centos/mysql-56-centos7"
+    volumes:
+    - mysql_data:/var/lib/mysql/data
+    ports:
+     - "3306:3306"
+    networks:
+      - hadoop
+    environment:
+      - MYSQL_USER=hive
+      - MYSQL_PASSWORD=cloudera
+      - MYSQL_DATABASE=metastore
+      - MYSQL_ROOT_PASSWORD=cloudera
+    restart: unless-stopped
+
+  hivemetastore:
+    image: "matthewcmead/cloudera-cdh-hivemetastore:cdh-5.14.2"
+    ports:
+     - "9083:9083"
+    networks:
+      - hadoop
+    depends_on:
+      - namenode
+      - yarnmaster
+      - mysql
+    restart: unless-stopped
 
 networks:
   hadoop:
