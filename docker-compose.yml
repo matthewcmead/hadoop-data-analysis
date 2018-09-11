@@ -4,6 +4,7 @@ volumes:
   dn_01_data:
   nn_01_data:
   mysql_data:
+  presto_data:
 
 services:
   namenode:
@@ -58,9 +59,9 @@ services:
   mysql:
     image: "centos/mysql-56-centos7"
     volumes:
-    - mysql_data:/var/lib/mysql/data
+      - mysql_data:/var/lib/mysql/data
     ports:
-     - "3306:3306"
+      - "3306:3306"
     networks:
       - hadoop
     environment:
@@ -82,15 +83,31 @@ services:
       - mysql
     restart: unless-stopped
 
+  presto:
+    image: "matthewcmead/cloudera-cdh-presto:cdh-5.14.2"
+    volumes:
+      - presto_data:/presto/data
+    ports:
+      - "9876:9876"
+    networks:
+      - hadoop
+    depends_on:
+      - namenode
+      - yarnmaster
+      - hivemetastore
+    restart: unless-stopped
+    expose:
+      - 9876
+
 networks:
   hadoop:
-    internal: true
+#    internal: true
 #    ipam:
 #      driver: default
 #      config:
 #        - subnet: 172.19.253.0/24
-  edge:
-    driver: bridge
+#  edge:
+#    driver: bridge
 #    ipam:
 #      driver: default
 #      config:
