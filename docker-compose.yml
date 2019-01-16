@@ -1,21 +1,23 @@
 version: "3"
 
 volumes:
-  dn_01_data:
-  nn_01_data:
-  mysql_data:
+#  dn_01_data:
+#  nn_01_data:
+  hms_data:
+#  mysql_data:
   presto_data:
+  minio_data:
 
 services:
-  namenode:
-    image: "matthewcmead/cloudera-cdh-namenode:cdh-5.14.2"
-    volumes:
-    - nn_01_data:/hdfs
-    ports:
-     - "8020:8020"
-    networks:
-      - hadoop
-    restart: unless-stopped
+#  namenode:
+#    image: "matthewcmead/cloudera-cdh-namenode:cdh-5.14.2"
+#    volumes:
+#    - nn_01_data:/hdfs
+#    ports:
+#     - "8020:8020"
+#    networks:
+#      - hadoop
+#    restart: unless-stopped
 
   yarnmaster:
     image: "matthewcmead/cloudera-cdh-yarnmaster:cdh-5.14.2"
@@ -24,12 +26,14 @@ services:
      - "8088:8088"
     networks:
       - hadoop
+    depends_on:
+      - minio
     restart: unless-stopped
 
   datanode01:
     image: "matthewcmead/cloudera-cdh-datanode:cdh-5.14.2"
-    volumes:
-    - dn_01_data:/hdfs
+#    volumes:
+#    - dn_01_data:/hdfs
     ports:
      - "50020:50020"
      - "50075:50075"
@@ -37,7 +41,8 @@ services:
     networks:
       - hadoop
     depends_on:
-      - namenode
+      - minio
+#      - namenode
       - yarnmaster
     restart: unless-stopped
 
@@ -52,24 +57,42 @@ services:
     networks:
       - hadoop
     depends_on:
-      - namenode
+#      - namenode
       - yarnmaster
+      - datanode01
+      - minio
     command: /bin/true
 
-  mysql:
-    image: "centos/mysql-56-centos7"
+  minio:
+    image: "matthewcmead/minio-centos7:latest"
+    environment:
+      - MINIO_ACCESS_KEY=abc
+      - MINIO_SECRET_KEY=abc12345
     volumes:
-      - mysql_data:/var/lib/mysql/data
+      - minio_data:/data
     ports:
-      - "3306:3306"
+      - "9000:9000"
+    expose:
+      - 9000
     networks:
       - hadoop
-    environment:
-      - MYSQL_USER=hive
-      - MYSQL_PASSWORD=cloudera
-      - MYSQL_DATABASE=metastore
-      - MYSQL_ROOT_PASSWORD=cloudera
-    restart: unless-stopped
+    command: ["server", "/data"]
+   
+
+#  mysql:
+#    image: "centos/mysql-56-centos7"
+#    volumes:
+#      - mysql_data:/var/lib/mysql/data
+#    ports:
+#      - "3306:3306"
+#    networks:
+#      - hadoop
+#    environment:
+#      - MYSQL_USER=hive
+#      - MYSQL_PASSWORD=cloudera
+#      - MYSQL_DATABASE=metastore
+#      - MYSQL_ROOT_PASSWORD=cloudera
+#    restart: unless-stopped
 
   hivemetastore:
     image: "matthewcmead/cloudera-cdh-hivemetastore:cdh-5.14.2"
@@ -78,10 +101,13 @@ services:
     networks:
       - hadoop
     depends_on:
-      - namenode
+#      - namenode
       - yarnmaster
-      - mysql
+      - datanode01
+#      - mysql
     restart: unless-stopped
+    volumes:
+      - hms_data:/data
 
   presto:
     image: "matthewcmead/cloudera-cdh-presto:cdh-5.14.2"
@@ -92,7 +118,7 @@ services:
     networks:
       - hadoop
     depends_on:
-      - namenode
+#      - namenode
       - yarnmaster
       - hivemetastore
     restart: unless-stopped
