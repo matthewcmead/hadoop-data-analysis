@@ -1,23 +1,11 @@
 version: "3"
 
 volumes:
-#  dn_01_data:
-#  nn_01_data:
   hms_data:
-#  mysql_data:
   presto_data:
   minio_data:
 
 services:
-#  namenode:
-#    image: "matthewcmead/cloudera-cdh-namenode:cdh-5.14.2"
-#    volumes:
-#    - nn_01_data:/hdfs
-#    ports:
-#     - "8020:8020"
-#    networks:
-#      - hadoop
-#    restart: unless-stopped
 
   yarnmaster:
     image: "matthewcmead/cloudera-cdh-yarnmaster:cdh-5.14.2"
@@ -32,32 +20,20 @@ services:
 
   datanode01:
     image: "matthewcmead/cloudera-cdh-datanode:cdh-5.14.2"
-#    volumes:
-#    - dn_01_data:/hdfs
     ports:
-     - "50020:50020"
-     - "50075:50075"
      - "8042:8042"
     networks:
       - hadoop
     depends_on:
       - minio
-#      - namenode
       - yarnmaster
     restart: unless-stopped
 
   edgenode:
     image: "matthewcmead/cloudera-cdh-edgenode:cdh-5.14.2"
-#    volumes:
-#    - pgdata:/var/lib/postgresql
-#    ports:
-#     - "50020:50020"
-#     - "50075:50075"
-#     - "8042:8042"
     networks:
       - hadoop
     depends_on:
-#      - namenode
       - yarnmaster
       - datanode01
       - minio
@@ -78,22 +54,6 @@ services:
       - hadoop
     command: ["server", "/data"]
    
-
-#  mysql:
-#    image: "centos/mysql-56-centos7"
-#    volumes:
-#      - mysql_data:/var/lib/mysql/data
-#    ports:
-#      - "3306:3306"
-#    networks:
-#      - hadoop
-#    environment:
-#      - MYSQL_USER=hive
-#      - MYSQL_PASSWORD=cloudera
-#      - MYSQL_DATABASE=metastore
-#      - MYSQL_ROOT_PASSWORD=cloudera
-#    restart: unless-stopped
-
   hivemetastore:
     image: "matthewcmead/cloudera-cdh-hivemetastore:cdh-5.14.2"
     ports:
@@ -101,10 +61,8 @@ services:
     networks:
       - hadoop
     depends_on:
-#      - namenode
       - yarnmaster
       - datanode01
-#      - mysql
     restart: unless-stopped
     volumes:
       - hms_data:/data
@@ -118,7 +76,6 @@ services:
     networks:
       - hadoop
     depends_on:
-#      - namenode
       - yarnmaster
       - hivemetastore
     restart: unless-stopped
